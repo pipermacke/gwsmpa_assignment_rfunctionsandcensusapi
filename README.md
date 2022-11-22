@@ -6,7 +6,7 @@ Please "fork" this repository so that you have a copy under your own Github acco
 
 Once you've forked the project, "clone" it without RStudio as a new project, as we've been doing. You'll then be ready to work.
 
-The assignment file itself is a Quarto document in this repo (`Rassignment_functions_census_yournamehere.qmd`). *Rename* the assignment file you're using to put *your own name as part of the file name*.
+The assignment file itself is a Quarto document in this repo (`Assignment_functions_census_yourname.qmd`). *Rename* the assignment file you're using to put *your own name as part of the file name*.
 
 During the course of your work on the assignment, make a *minimum of three "commits"* with corresponding commit messages describing your progress. You can make more if you so choose, but make at least three commit snapshots.
 
