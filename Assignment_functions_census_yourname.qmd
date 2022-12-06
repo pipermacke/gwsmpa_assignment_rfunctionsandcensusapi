@@ -30,31 +30,49 @@ options(tigris_class = "sf")
 
 ```{r}
 
+sum_me <- function(number1, number2){
+  result <- number1 + number2
+  return(result)
+}
 
-
-
+sum_me(3, 5)
 
 ```
 
 2) Create a function that will return the mean of a list of numbers fed to it. (Remember that in our case we're using the word "list" for easier understanding, but we're talking about a "vector" of numbers in R-speak.)
 
+
+For a list of 4 numbers with example: 
 ```{r}
 
+mean_list <- function(number1, number2, number3, number4){
+  result <- (number1 + number2 + number3 + number4)/4
+  return(result)
+  
+}
 
-
-
+mean_list(1, 2, 3, 4)
 
 
 ```
+
 
 3) Now, expand on the function you made above, and instead of just returning the mean number alone, have it return the sentence:
 *"The mean is ___"*. (Where the blank is the mean.)
 
 ```{r}
+mean_list <- function(number1, number2, number3, number4){
+  result <- (number1 + number2 + number3 + number4)/4
+  return(result)
+  
+}
 
+mean_sentence <- function(number1, number2, number3, number4){
+  result <- paste0("The mean is ", mean_list(number1, number2, number3, number4))
+  return(result)
+}
 
-
-
+mean_sentence(1, 2, 3, 4)
 
 ```
 
@@ -72,10 +90,12 @@ head(flights)
 ```{r}
 
 
+  origin_airport <- function(origin_port){
+    result <- filter(flights, origin == origin_port) 
+    return(result)
+}
 
-
-
-
+origin_airport('EWR')
 
 ```
 
@@ -85,11 +105,18 @@ head(flights)
 
 -   aggregates (i.e. counts) the results by airline (`carrier`) to show how many flights each airline has from that airport.
 
+
 ```{r}
 
+  origin_airport <- function(origin_port){
+    port_results <- filter(flights, origin == origin_port)
+    #gives every flight from one airport
+    result <- count(port_results, carrier)
+    return(result)
+    
+}
 
-
-
+origin_airport('JFK')
 
 
 ```
@@ -110,8 +137,7 @@ Uncomment the code below and run it to install your API key on your computer. Ag
 
 ```{r}
 
-# census_api_key("PUTYOURAPIKEYHERE", install=TRUE)
-
+# census_api_key("dbe9bc73fa341909db3c9f35bfe17571eeff1e24", install=TRUE)
 
 ```
 
@@ -128,18 +154,23 @@ Now, using the `get_acs()` function in tidycensus, pull down the state-level dat
 ```{r}
 
 
+state_data <-
+  get_acs(geography = "state", 
+        variables = c(myvars), 
+        output = "wide")
 
-
-
+state_data
 ```
 
 To make things a little cleaner, use the `select()` function to remove the three "margin of error" columns, which are denoted with their ending "M".
 
 ```{r}
 
+#the table didn't have any instances of endings with "M", but this is how you would get rid of it if so 
 
-
-
+new_state_data <- state_data %>% 
+  select(-ends_with('M'))
+new_state_data
 
 ```
 
@@ -147,9 +178,14 @@ Now, using the `mutate()` function, create a new column that contains the percen
 
 ```{r}
 
+#can't figure this out, keeps saying "education_bachelors not found"
 
+state_edu_wide <- new_state_data %>%
+  mutate(
+    pct_bach_grad = round_half_up((education_bachelorsE + education_gradprofessE) / education_totalE * 100)
+  )
 
-
+state_edu_wide
 
 ```
 
@@ -159,9 +195,12 @@ First, filter your data to remove Alaska, Hawaii and Puerto Rico.
 
 ```{r}
 
+state_edu_wide2 <- state_edu_wide %>% 
+  filter(NAME != "Alaska", 
+         NAME != "Hawaii", 
+         NAME != "Puerto Rico")
 
-
-
+state_edu_wide2
 
 ```
 
@@ -169,10 +208,20 @@ Now, using the tmap() package, create a shaded map for the continental U.S. that
 
 ```{r}
 
+#using the method to filter out the states in the tmap package (class file) so hopefully this is right 
+states_geo <- tigris::states(resolution = "20m", cb = TRUE) 
+vector_continentalus <- fips_codes %>% 
+  distinct(state) %>% 
+  filter(!state %in% c("AK", "HI", "PR", "AS", "GU", "MP", "UM", "VI")) %>% 
+  pull(state)
 
+states_geo <- states_geo %>% 
+  filter(STUSPS %in% vector_continentalus)
 
+states_pct <- inner_join(states_geo, state_edu_wide2, by = c("GEOID"))
 
-
+tm_shape(states_pct) +
+  tm_polygons("pct_bach_grad", id = "GEOID")
 
 
 ```
